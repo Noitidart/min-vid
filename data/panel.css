@@ -137,6 +137,10 @@ body {
     background: url('img/close.svg');
 }
 
+.drag {
+    background: red;
+}
+
 .volume {
     border-radius: 5px;
     cursor: pointer;

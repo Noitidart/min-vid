@@ -196,6 +196,12 @@ const PlayerView = React.createClass({
   close: function() {
     sendToAddon({action: 'close'});
   },
+  dragMouseDown: function() {
+    sendToAddon({action: 'dragMouseDown'});
+  },
+  dragMouseUp: function() {
+    sendToAddon({action: 'dragMouseUp'});
+  },
   enterControls: function() {
     this.setState({showVolume: true});
   },
@@ -227,6 +233,7 @@ const PlayerView = React.createClass({
             <a onClick={this.minimize} className={!this.props.minimized ? 'minimize' : 'minimize hidden'} />
             <a onClick={this.maximize} className={this.props.minimized ? 'maximize' : 'maximize hidden'} />
             <a onClick={this.close} className={'close'} />
+            <a onMouseDown={this.dragMouseDown} onMouseUp={this.dragMouseUp} className={'drag'} />
           </div>
         </div>
 

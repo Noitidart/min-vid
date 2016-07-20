@@ -51,6 +51,28 @@ panel.port.on('message', opts => {
       }
     });
   }
+  else if (title === 'dragMouseDown') {
+    panel.hide();
+    panel.show({
+      height: 360,
+      width: 640,
+      position: {
+        bottom: 0,
+        left: 0
+      }
+    });
+  }
+  else if (title === 'dragMouseUp') {
+    panel.hide();
+    panel.show({
+      height: 180,
+      width: 320,
+      position: {
+        top: 10,
+        right: 10
+      }
+    });
+  }
 });
 
 function getPageUrl(domain, id) {
