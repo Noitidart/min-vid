@@ -26,8 +26,9 @@
   },
   "license": "MPL-2.0",
   "dependencies": {
-    "get-video-id": "1.0.0",
     "classnames": "2.2.5",
+    "get-video-id": "1.0.0",
+    "react-resizable": "^1.4.2",
     "react-tooltip": "3.0.13"
   },
   "devDependencies": {

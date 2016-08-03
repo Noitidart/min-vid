@@ -1,6 +1,7 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 const ReactTooltip = require('react-tooltip');
+const {ResizableBox} = require('react-resizable');
 const cn = require('classnames');
 
 const defaultData = {
@@ -197,6 +198,8 @@ const PlayerView = React.createClass({
   },
   render: function() {
     return (
+      // Set the width and height smaller than container to ensure the handle is visible for testing.
+      <ResizableBox className="box" width={300} height={160} lockAspectRatio={true}>
         <div className={'video-wrapper'} onMouseEnter={this.enterPlayer}
              onMouseLeave={this.leavePlayer}>
           <div className={cn('controls', {hidden: !this.state.hovered, minimized: this.props.minimized})}
@@ -236,6 +239,7 @@ const PlayerView = React.createClass({
 
           <video id={'video'} ref={'video'} src={this.props.src} autoplay={false} />
         </div>
+      </ResizableBox>
     );
   }
 });
