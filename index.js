@@ -61,8 +61,35 @@ panel.port.on('message', opts => {
         left: 10
       }
     });
+  } else if (title === 'record-event') {
+    sendMetricsData(opts);
   }
 });
+
+function sendMetricsData(o) {
+  let coords = getActiveView(panel).getBoundingClientRect();
+  let appState = JSON.parse(o.data);
+
+  // if the user activated the player, action should be 'activate'
+  // if the user closed the player, action should be 'deactivate'
+  // action is 'paused' if the user stopped playing ('playing' transitioning to false)
+
+  // actions: 'activate', 'deactivate', 'play', 'pause', 0
+
+  // NOTE: this packet follows a predefined data format and cannot be changed
+  //       without notifying the data team. See docs/metrics.md for more.
+  let data = {
+    action: o.changed,
+    activated_from: 'contextmenu', // always true for now
+    domain: o.domain,
+    doorhanger_prompted: false, // we have no doorhanger (yet)
+    doorhanger_clicked: false,  // we have no doorhanger (yet)
+    video_x: coords.top,
+    video_y: coords.left,
+    video_width: coords.width,
+    video_height: coords.height
+  };
+}
 
 function getPageUrl(domain, id, time) {
   let url;
@@ -84,6 +111,7 @@ cm.Item({
   context: cm.SelectorContext('[href*="youtube.com"], [href*="youtu.be"]'),
   contentScript: contextMenuContentScript,
   onMessage: (url) => {
+    sendMetricsData({changed: 'activate', domain: 'youtube.com'});
     launchVideo({url: url,
                  domain: 'youtube.com',
                  getUrlFn: getYouTubeUrl});
@@ -98,6 +126,7 @@ cm.Item({
   ],
   contentScript: contextMenuContentScript,
   onMessage: (url) => {
+    sendMetricsData({changed: 'activate', domain: 'youtube.com'});
     launchVideo({url: url,
                  domain: 'youtube.com',
                  getUrlFn: getYouTubeUrl});
@@ -109,6 +138,7 @@ cm.Item({
   context: cm.SelectorContext('[href*="vimeo.com"]'),
   contentScript: contextMenuContentScript,
   onMessage: (url)=> {
+    sendMetricsData({changed: 'activate', domain: 'vimeo.com'});
     launchVideo({url: url,
                  domain: 'vimeo.com',
                  getUrlFn: getVimeoUrl});
@@ -120,6 +150,7 @@ cm.Item({
   context: cm.SelectorContext('[href*="vine.co/v/"]'),
   contentScript: contextMenuContentScript,
   onMessage: function(url) {
+    sendMetricsData({changed: 'activate', domain: 'vine.co'});
     launchVideo({url: url,
                  domain: 'vine.co',
                  getUrlFn: getVineUrl});

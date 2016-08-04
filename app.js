@@ -52,6 +52,7 @@ const App = React.createClass({
 
 const ErrorView = React.createClass({
   render: function() {
+    sendToAddon({action: 'metrics-data', changed: 'error_view:render', domain: window.AppData.domain});
     return (
       <div className={'error'}>
         <img src={'img/sadface.png'}
@@ -73,9 +74,11 @@ const LoadingView = React.createClass({
     this.setState({hovered: false});
   },
   close: function() {
+    sendToAddon({action: 'metrics-data', changed: 'loading_view:close', domain: window.AppData.domain});
     sendToAddon({action: 'close'});
   },
   render: function() {
+    sendToAddon({action: 'metrics-data', changed: 'loading_view:render', domain: window.AppData.domain});
     return (
         <div className={'loading'} onMouseEnter={this.enterView} onMouseLeave={this.leaveView}>
           <ReactTooltip place='bottom' effect='solid' />
@@ -113,6 +116,7 @@ const PlayerView = React.createClass({
     if (window.AppData.playing) requestAnimationFrame(this.step);
   },
   onLoaded: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:video_loaded', domain: window.AppData.domain});
     window.AppData = Object.assign(window.AppData, {
       loaded: true,
       duration: this.refs.video.duration
@@ -127,15 +131,18 @@ const PlayerView = React.createClass({
     this.refs.video.addEventListener('progress', ev => {});
   },
   play: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:play', domain: window.AppData.domain});
     this.refs.video.play();
     window.AppData.playing = true;
     requestAnimationFrame(this.step);
   },
   pause: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:pause', domain: window.AppData.domain});
     this.refs.video.pause();
     window.AppData.playing = false;
   },
   mute: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:mute', domain: window.AppData.domain});
     this.refs.video.muted = true;
     window.AppData = Object.assign(window.AppData, {
       muted: true,
@@ -143,6 +150,7 @@ const PlayerView = React.createClass({
     });
   },
   unmute: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:unmute', domain: window.AppData.domain});
     this.refs.video.muted = false;
     window.AppData = Object.assign(window.AppData, {
       muted: false,
@@ -159,14 +167,17 @@ const PlayerView = React.createClass({
     });
   },
   minimize: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:minimize', domain: window.AppData.domain});
     sendToAddon({action: 'minimize'});
     window.AppData.minimized = true;
   },
   maximize: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:maximize', domain: window.AppData.domain});
     sendToAddon({action: 'maximize'});
     window.AppData.minimized = false;
   },
   sendToTab: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:send_to_tab', domain: window.AppData.domain});
     sendToAddon({
       action: 'send-to-tab',
       id: window.AppData.id,
@@ -181,6 +192,7 @@ const PlayerView = React.createClass({
     this.refs.video.currentTime = this.refs.video.duration * clickedValue;
   },
   close: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:close', domain: window.AppData.domain});
     sendToAddon({action: 'close'});
   },
   enterControls: function() {
@@ -196,6 +208,7 @@ const PlayerView = React.createClass({
     this.setState({hovered: false});
   },
   render: function() {
+    sendToAddon({action: 'metrics-data', changed: 'player_view:render', domain: window.AppData.domain});
     return (
         <div className={'video-wrapper'} onMouseEnter={this.enterPlayer}
              onMouseLeave={this.leavePlayer}>
