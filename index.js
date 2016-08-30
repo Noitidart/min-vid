@@ -100,7 +100,6 @@ class Panel {
 		this.frame.width = this.width;
 		this.frame.height = this.height;
 		this.frame.id = 'minvid-frame';
-		// TODO: no idea if this'll work, seems like it should?
 		this.frame.setAttribute('src', self.data.url(this.opts.contentURL));
 		this.el.appendChild(this.frame);
 
