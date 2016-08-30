@@ -193,7 +193,9 @@ panel.port.on('addon-message', opts => {
 });
 
 function sendMetricsData(o) {
+  if (!panel.el) { return; } // TODO: fix. caused by lazy-loading the panel, metrics tries to check it before it exists
   const coords = panel.el.getBoundingClientRect();
+
 
   // NOTE: this packet follows a predefined data format and cannot be changed
   //       without notifying the data team. See docs/metrics.md for more.
