@@ -84,13 +84,13 @@ class Panel {
 		// Note: win is a XUL window, not a DOM window
 		this.win = Services.wm.getMostRecentWindow('navigator:browser');
 
-		this.el = win.document.createElement('panel');
+		this.el = this.win.document.createElement('panel');
 		this.el.setAttribute('style', '-moz-appearance: none; border: 0; margin: 0');
 		this.el.setAttribute('noautohide', true);
 		// backdrag makes the background area of the panel draggable
 		this.el.setAttribute('backdrag', true);
 
-		this.frame = win.document.createElement('browser');
+		this.frame = this.win.document.createElement('browser');
 		// TODO: might need to use frame.setAttribute. not sure.
 		this.frame.width = this.width;
 		this.frame.height = this.height;
@@ -99,7 +99,7 @@ class Panel {
 		this.frame.src = self.data.url(self.data.url(this.opts.contentURL));
 		this.el.appendChild(this.frame);
 
-		let label = win.document.createElement('label');
+		let label = this.win.document.createElement('label');
 		// TODO: not sure this id is needed
 		label.id = 'backdragspot';
 		label.setAttribute('value', 'click here to drag the thing'); // just for testing
