@@ -78,6 +78,10 @@ class Panel {
 
 		// TODO: figure out what to do with position
 		this.position = this.opts.position;
+
+		// TODO: find a cleaner way // 'this is why we can't have nice things'
+		this.show = this.show.bind(this);
+		this.hide = this.hide.bind(this);
 	}
 
 	// _createPanel sets this.el and inserts the panel into the DOM
@@ -143,7 +147,9 @@ class Panel {
 	}
 
 	get isShowing() {
-		return this.el && this.el.state == 'open';
+	  // hard-coded for now, not sure getters can be bound
+	  return false;
+		// return this.el && this.el.state == 'open';
 	}
 }
 
