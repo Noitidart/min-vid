@@ -101,7 +101,7 @@ class Panel {
 		this.frame.height = this.height;
 		this.frame.id = 'minvid-frame';
 		// TODO: no idea if this'll work, seems like it should?
-		this.frame.src = self.data.url(self.data.url(this.opts.contentURL));
+		this.frame.src = self.data.url(this.opts.contentURL);
 		this.el.appendChild(this.frame);
 
 		let label = this.win.document.createElement('label');
