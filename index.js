@@ -190,20 +190,6 @@ panel.port.on('addon-message', opts => {
         left: 10
       }
     });
-  } else if (title === 'expand-panel') {
-    panel.hide();
-    panel.show({
-      width: dimensions.width,
-      height: dimensions.height,
-      position: opts.position
-    });
-  } else if (title === 'shrink-panel') {
-    panel.hide();
-    panel.show({
-      width: opts.style.width,
-      height: opts.style.height,
-      position: opts.position
-    });
   } else if (title === 'metrics-event') {
     sendMetricsData(opts);
   }
