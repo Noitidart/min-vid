@@ -146,7 +146,7 @@ class Panel {
 	}
 }
 
-const panel = require('sdk/panel').Panel({
+const panel = new Panel({
   contentURL: './default.html',
   contentScriptFile: './controls.js',
   width: 320,
@@ -156,9 +156,6 @@ const panel = require('sdk/panel').Panel({
     left: 10
   }
 });
-
-const { getActiveView } = require('sdk/view/core');
-getActiveView(panel).setAttribute('noautohide', true);
 
 panel.port.on('addon-message', opts => {
   const title = opts.action;
