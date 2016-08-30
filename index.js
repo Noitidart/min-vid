@@ -52,6 +52,23 @@ self.on('click', function (node, data) {
 
 let dimensions = getDocumentDimensions();
 
+// for right now, a no-op. soon, a transport layer.
+class Port {
+	on(msg) { console.log('port.on called: ', msg) }
+	emit(msg) { console.log('port.emit called: ', msg) }
+}
+
+class Panel {
+	constructor(opts) {
+		this.opts = opts; // wtfever
+		this.port = new Port();
+	}
+
+	show() {}
+	hide() {}
+	get isShowing() { return true; } // wtfever for now
+}
+
 const panel = require('sdk/panel').Panel({
   contentURL: './default.html',
   contentScriptFile: './controls.js',
