@@ -7,6 +7,8 @@
 /* global Services */
 
 const {Cu} = require('chrome');
+const self = require("sdk/self");
+
 Cu.import('resource://gre/modules/Services.jsm');
 
 const getVideoId = require('get-video-id');
