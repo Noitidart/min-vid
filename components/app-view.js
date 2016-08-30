@@ -40,7 +40,6 @@ module.exports = React.createClass({
   },
   render: function() {
     return (
-        <Draggable onStop={this.handleDragStop} onStart={this.handleDragStart} position={this.state.draggablePosition}>
           <div className={'app'} style={this.state.style} ref={(el) => this._element = el}>
             {/* Show Error View, ELSE Show Loading View ELSE no view */}
             {this.props.error ? <ErrorView {...this.props}/> :
@@ -50,7 +49,6 @@ module.exports = React.createClass({
               <PlayerView {...this.props} />
             </div>
           </div>
-        </Draggable>
     );
   }
 });
