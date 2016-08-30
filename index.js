@@ -15,7 +15,6 @@ const getVideoId = require('get-video-id');
 const getYouTubeUrl = require('./lib/get-youtube-url.js');
 const getVimeoUrl = require('./lib/get-vimeo-url.js');
 const getVineUrl = require('./lib/get-vine-url.js');
-const makePanelTransparent = require('./lib/make-panel-transparent.js');
 const getDocumentDimensions = require('./lib/get-document-dimensions.js');
 const pageMod = require('sdk/page-mod');
 const cm = require('sdk/context-menu');
@@ -351,8 +350,7 @@ function launchVideo(opts) {
       if (!err) updatePanel({src: streamUrl});
     });
   }
-  // todo: see if we can just call this when initializing the panel
-  makePanelTransparent(panel);
+  // TODO: make sure the panel is still transparent
 }
 
 // handle browser resizing
