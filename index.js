@@ -60,13 +60,90 @@ class Port {
 
 class Panel {
 	constructor(opts) {
+		// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left }
+
 		this.opts = opts; // wtfever
 		this.port = new Port();
+		// panel is instantiated on first show() call
+		this.el = null;
+		// keep a pointer to the panel iframe for convenience
+		this.frame = null;
+		// window pointer is used to anchor the popup in the show() call
+		this.win = null;
+
+		// dimensions change when minimizing or resizing
+		this.height = this.opts.height || 180;
+		this.width = this.opts.width || 320;
+
+		// TODO: figure out what to do with position
+		this.position = this.opts.position;
 	}
 
-	show() {}
-	hide() {}
-	get isShowing() { return true; } // wtfever for now
+	// _createPanel sets this.el and inserts the panel into the DOM
+	_createPanel() {
+		// Note: win is a XUL window, not a DOM window
+		this.win = Services.wm.getMostRecentWindow('navigator:browser');
+
+		this.el = win.document.createElement('panel');
+		this.el.setAttribute('style', '-moz-appearance: none; border: 0; margin: 0');
+		this.el.setAttribute('noautohide', true);
+		// backdrag makes the background area of the panel draggable
+		this.el.setAttribute('backdrag', true);
+
+		this.frame = win.document.createElement('browser');
+		// TODO: might need to use frame.setAttribute. not sure.
+		this.frame.width = this.width;
+		this.frame.height = this.height;
+		this.frame.id = 'minvid-frame';
+		// TODO: no idea if this'll work, seems like it should?
+		this.frame.src = self.data.url('default.html');
+		this.el.appendChild(this.frame);
+
+		let label = win.document.createElement('label');
+		// TODO: not sure this id is needed
+		label.id = 'backdragspot';
+		label.setAttribute('value', 'click here to drag the thing'); // just for testing
+		label.setAttribute('style', 'border: 1px solid black');
+		// Start off with the drag handle hidden; unhide it on hover
+		label.setAttribute('hidden', true);
+		this.el.appendChild(label);
+
+		this.el.onmouseenter = () => {
+			label.setAttribute('hidden', false);
+		};
+
+		this.el.onmouseleave = () => {
+			label.setAttribute('hidden', true);
+			// TODO: panel doesn't auto-shrink when the label is hidden. manually reset its size.
+			this.el.sizeTo(this.width, this.height);
+		};
+
+		this.win.document.documentElement.appendChild(this.el);
+	}
+
+	show(opts) {
+		// lazily create the panel
+		if (!this.el) {
+			this._createPanel();
+		}
+
+		// map opts onto popup state
+		this.height = opts && opts.height || this.height;
+		this.position = opts && opts.position || this.position;
+			
+		// reset size because you can't resize from openPopup
+		this.el.sizeTo(this.width, this.height);
+		// TODO: not sure about the position shorthand values (2nd arg)
+		this.el.openPopup(this.win, 'bottomleft bottomleft', this.position.left, this.position.bottom, false, false);
+	}
+
+	hide() {
+		this.el.hidePopup();
+	}
+
+	get isShowing() {
+		return this.el && this.el.state == 'open';
+	}
 }
 
 const panel = require('sdk/panel').Panel({
