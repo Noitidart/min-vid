@@ -56,7 +56,7 @@ let dimensions = getDocumentDimensions();
 // for right now, a no-op. soon, a transport layer.
 class Port {
 	on(msg) { console.log('port.on called: ', msg) }
-	emit(msg) { console.log('port.emit called: ', msg) }
+	emit(msg, data) { console.log('port.emit called: ', msg, data) }
 }
 
 class Panel {
