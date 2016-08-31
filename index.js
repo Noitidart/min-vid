@@ -141,7 +141,7 @@ class Panel {
 		// reset size because you can't resize from openPopup
 		this.el.sizeTo(this.width, this.height);
 		// TODO: not sure about the position shorthand values (2nd arg)
-		this.el.openPopup(this.win, 'bottomleft bottomleft', this.position.left, this.position.bottom, false, false);
+		this.el.openPopup(this.win.document.documentElement, 'bottomleft bottomleft', this.position.left, this.position.bottom, false, false);
 	}
 
 	hide() {
