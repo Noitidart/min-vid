@@ -162,7 +162,8 @@ const panel = new Panel({
 });
 
 panel.port.on('addon-message', opts => {
-  const title = opts.action;
+  console.log('index.js addon-message callback called, opts is ', opts);
+  const title = opts.type;
 
   if (title === 'send-to-tab') {
     const pageUrl = getPageUrl(opts.domain, opts.id, opts.time);

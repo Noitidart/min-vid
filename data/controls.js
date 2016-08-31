@@ -5,12 +5,14 @@
  */
 
 // webchannel ID sent over by chrome
-let channelId;
+// TODO: while debugging, just using one global static name
+let channelId = 'minvid';
 
 window.addEventListener("WebChannelMessageToContent", function(e) {
   console.log('controls.js received postmessage event: ', e);
 
-  channelId = e.detail.id;
+  // TODO: uncomment when we figure out channel initialization sequence
+  //channelId = e.detail.id;
 
   if (e.detail.message.type == 'set-video') {
     let opts = Object.assign(e.detail.message.data, {
