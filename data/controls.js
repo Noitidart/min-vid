@@ -4,27 +4,42 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-self.port && self.port.on('set-video', opts => {
-  opts = Object.assign(opts, {
-    loaded: false,
-    error: false,
-    progress: 0,
-    playing: false,
-    volume: '0.5'
-  });
-  unsafeWindow.AppData = Object.assign(unsafeWindow.AppData, opts);
-});
+// webchannel ID sent over by chrome
+let channelId;
 
-// TODO: just until the WebCHannel is wired up, auto-toggle the src
-setTimeout(() => {
-  console.log('time is up, data/controls.js about to reset the src');
-  // TODO: where did unsafeWindow go?
-  AppData.src = 'https://www.youtube.com/embed/dYFALyP2e7U/?autoplay=0&modestbranding=1&controls=0&disablekb=0&enablejsapi=1&fs=0&iv_load_policy=3&loop=0&rel=0&showinfo=0';
-}, 3000);
+window.addEventListener("WebChannelMessageToContent", function(e) {
+  console.log('controls.js received postmessage event: ', e);
+
+  channelId = e.detail.id;
+
+  if (e.detail.message.type == 'set-video') {
+    let opts = Object.assign(e.detail.message.data, {
+      loaded: false,
+      error: false,
+      progress: 0,
+      playing: false,
+      volume: '0.5'
+    });
+    unsafeWindow.AppData = Object.assign(unsafeWindow.AppData, opts);
+  }
+});
 
 // Bridge between app.js window messages to the
 // addon. We pass true for the wantsUntrusted param
 // in order to access the message events. #82
 window.addEventListener('addon-message', function(ev) {
-  self.port && self.port.emit('addon-message', ev.detail);
+  if (!channelId) {
+    console.error('content tried to send a message before addon initialized webchannel id: ', ev);
+    return;
+  }
+
+  window.dispatchEvent(new window.CustomEvent("WebChannelMessageToChrome", {
+    detail: JSON.stringify({
+      id: channelId,
+      message: {
+        type: 'addon-message',
+        data: ev.detail
+      }
+    })
+  }));
 }, false, true);
