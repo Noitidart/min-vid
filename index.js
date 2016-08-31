@@ -16,6 +16,7 @@ const getYouTubeUrl = require('./lib/get-youtube-url.js');
 const getVimeoUrl = require('./lib/get-vimeo-url.js');
 const getVineUrl = require('./lib/get-vine-url.js');
 const getDocumentDimensions = require('./lib/get-document-dimensions.js');
+const Transport = require('./lib/transport.js');
 const pageMod = require('sdk/page-mod');
 const cm = require('sdk/context-menu');
 
@@ -53,18 +54,12 @@ self.on('click', function (node, data) {
 
 let dimensions = getDocumentDimensions();
 
-// for right now, a no-op. soon, a transport layer.
-class Port {
-	on(msg) { console.log('port.on called: ', msg) }
-	emit(msg, data) { console.log('port.emit called: ', msg, data) }
-}
-
 class Panel {
 	constructor(opts) {
 		// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left }
 
 		this.opts = opts; // wtfever
-		this.port = new Port();
+		this.port = new Transport(self.data.url(this.opts.contentURL));
 		// panel is instantiated on first show() call
 		this.el = null;
 		// keep a pointer to the panel iframe for convenience
