@@ -4,7 +4,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-self.port.on('set-video', opts => {
+self.port && self.port.on('set-video', opts => {
   opts = Object.assign(opts, {
     loaded: false,
     error: false,
