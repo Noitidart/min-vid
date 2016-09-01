@@ -60,6 +60,11 @@ class Panel {
 
 		this.opts = opts; // wtfever
 		this.port = new Transport(self.data.url(this.opts.contentURL));
+		// TODO: just experimenting. see if we can catch the first message from the frame.
+		this.port.on('frame-loaded', evt => {
+		  console.log('frame-loaded message received by chrome', evt);
+		  // TODO: store whatever you need here (domain? c
+		});
 		// panel is instantiated on first show() call
 		this.el = null;
 		// keep a pointer to the panel iframe for convenience
@@ -77,6 +82,8 @@ class Panel {
 		// TODO: find a cleaner way // 'this is why we can't have nice things'
 		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
+
+		this._createPanel();
 	}
 
 	// _createPanel sets this.el and inserts the panel into the DOM
@@ -95,6 +102,7 @@ class Panel {
 		this.frame.width = this.width;
 		this.frame.height = this.height;
 		this.frame.id = 'minvid-frame';
+		// TODO: append a querystring to the contentURL to enable multiple minvid panels?
 		this.frame.setAttribute('src', self.data.url(this.opts.contentURL));
 		this.el.appendChild(this.frame);
 
