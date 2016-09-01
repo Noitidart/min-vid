@@ -54,28 +54,19 @@ self.on('click', function (node, data) {
 let dimensions = getDocumentDimensions();
 
 class Panel {
+	// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left } }
 	constructor(opts) {
-		// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left }
 
-		this.opts = opts; // TODO: just storing a pointer for the moment. assign individually if we need em later
+		// Public API
+		this.show = this.show.bind(this);
+		this.hide = this.hide.bind(this);
+		this.onContentMessage = this.onContentMessage.bind(this);
 
+		// PageMod-related state is initialized async.
+		this.pageMod = null;
 		this.frameWorker = null;
 		this.port = null;
-		// create pageMod.
-		// load the controls.js script.
-		// assign this.port in the worker callback.
-		this.pageMod = pageMod.PageMod({
-		  include: opts.contentURL,
-		  contentScriptFile: opts.contentScriptFile,
-		  onAttach: (worker) => {
-		    this.frameWorker = worker;
-		    this.port = worker.port;
-		  },
-		  onError: (err) => {
-		    // TODO: should we retry on error? when would this throw?
-		    console.error(`PageMod failed to attach to ${opts.contentURL}: `, err);
-		  }
-		});
+    this._initPageMod(opts.contentURL, opts.contentScriptFile);
 
 		// panel is instantiated on first show() call
 		this.el = null;
@@ -85,15 +76,32 @@ class Panel {
 		this.win = null;
 
 		// dimensions change when minimizing or resizing
-		this.height = this.opts.height || 180;
-		this.width = this.opts.width || 320;
+		this.height = opts.height || 180;
+		this.width = opts.width || 320;
 
 		// TODO: figure out what to do with position
-		this.position = this.opts.position;
-
-		// TODO: find a cleaner way // 'this is why we can't have nice things'
-		this.show = this.show.bind(this);
-		this.hide = this.hide.bind(this);
+		this.position = opts.position;
+	}
+	
+  // TODO: will this attach to _every_ copy of default.html?
+  // If so, won't that lead to a lot of problems with multiple windows?
+  // Maybe using tabs.worker will be better? Attach to just the one page?
+  // Or, maybe this will push us in the direction of a single global
+  // preview panel?
+	_initPageMod(contentURL, contentScriptFile) {
+		this.pageMod = pageMod.PageMod({
+		  include: contentURL,
+		  contentScriptFile: contentScriptFile,
+		  onAttach: (worker) => {
+		    this.frameWorker = worker;
+		    this.port = worker.port;
+        this.port.on('addon-message', this.onContentMessage);
+		  },
+		  onError: (err) => {
+		    // We really can't continue if the PageMod doesn't attach.
+		    throw new Error(`PageMod failed to attach to ${opts.contentURL}: `, err);
+		  }
+		});
 	}
 
 	// _createPanel sets this.el and inserts the panel into the DOM
@@ -136,7 +144,7 @@ class Panel {
 
 		this.win.document.documentElement.appendChild(this.el);
 
-		// let's put a pointer out there, so we can play with this stuff
+		// TODO: just for testing: let's put a pointer out there so we can play with this stuff
 		this.win.minVidPanel = this;
 	}
 
@@ -165,6 +173,42 @@ class Panel {
 	  return false;
 		// return this.el && this.el.state == 'open';
 	}
+
+  onContentMessage(opts) {
+    console.log('index.js addon-message callback called, opts is ', opts);
+    const title = opts.type;
+
+    if (title === 'send-to-tab') {
+      const pageUrl = getPageUrl(opts.domain, opts.id, opts.time);
+      if (pageUrl) require('sdk/tabs').open(pageUrl);
+      else console.error('could not parse page url for ', opts); // eslint-disable-line no-console
+      updatePanel({domain: '', src: ''});
+      panel.hide();
+    } else if (title === 'close') {
+      updatePanel({domain: '', src: ''});
+      panel.hide();
+    } else if (title === 'minimize') {
+      panel.hide();
+      panel.show({
+        height: 40,
+        position: {
+          bottom: 0,
+          left: 10
+        }
+      });
+    } else if (title === 'maximize') {
+      panel.hide();
+      panel.show({
+        height: 180,
+        position: {
+          bottom: 10,
+          left: 10
+        }
+      });
+    } else if (title === 'metrics-event') {
+      sendMetricsData(opts);
+    }
+	}
 }
 
 const panel = new Panel({
@@ -178,41 +222,6 @@ const panel = new Panel({
   }
 });
 
-panel.port.on('addon-message', opts => {
-  console.log('index.js addon-message callback called, opts is ', opts);
-  const title = opts.type;
-
-  if (title === 'send-to-tab') {
-    const pageUrl = getPageUrl(opts.domain, opts.id, opts.time);
-    if (pageUrl) require('sdk/tabs').open(pageUrl);
-    else console.error('could not parse page url for ', opts); // eslint-disable-line no-console
-    updatePanel({domain: '', src: ''});
-    panel.hide();
-  } else if (title === 'close') {
-    updatePanel({domain: '', src: ''});
-    panel.hide();
-  } else if (title === 'minimize') {
-    panel.hide();
-    panel.show({
-      height: 40,
-      position: {
-        bottom: 0,
-        left: 10
-      }
-    });
-  } else if (title === 'maximize') {
-    panel.hide();
-    panel.show({
-      height: 180,
-      position: {
-        bottom: 10,
-        left: 10
-      }
-    });
-  } else if (title === 'metrics-event') {
-    sendMetricsData(opts);
-  }
-});
 
 function sendMetricsData(o) {
   if (!panel.el) { return; } // TODO: fix. caused by lazy-loading the panel, metrics tries to check it before it exists
