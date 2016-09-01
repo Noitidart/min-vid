@@ -4,6 +4,23 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
+// When the window loads, send a WebChannel message to chrome to initialize the channel.
+function connect() {
+  function _onWindowLoaded {
+    let event = new window.CustomEvent('WebChannelMessageToChrome', {
+      detail: JSON.stringify({ type: 'frame-loaded' });
+    });
+    window.dispatchEvent(event);
+  };
+
+  if (window.document.readyState === 'complete') {
+    _onWindowLoaded();
+  } else {
+    window.onload = _onWindowLoaded;
+  }
+}
+connect();
+
 // webchannel ID sent over by chrome
 // TODO: while debugging, just using one global static name
 let channelId = 'minvid';
@@ -29,6 +46,7 @@ window.addEventListener("WebChannelMessageToContent", function(e) {
 // Bridge between app.js window messages to the
 // addon. We pass true for the wantsUntrusted param
 // in order to access the message events. #82
+// TODO: port this to webchannel
 window.addEventListener('addon-message', function(ev) {
   if (!channelId) {
     console.error('content tried to send a message before addon initialized webchannel id: ', ev);
