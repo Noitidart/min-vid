@@ -8,9 +8,11 @@ console.log('data/controls.js loaded');
 
 // When the window loads, send a WebChannel message to chrome to initialize the channel.
 function connect() {
+  console.log('controls.js connect() called');
   function _onWindowLoaded() {
+    console.log('controls.js _onWindowLoaded called');
     let event = new window.CustomEvent('WebChannelMessageToChrome', {
-      detail: JSON.stringify({ type: 'frame-loaded' })
+      detail: JSON.stringify({ id: 'minvid', message: { type: 'frame-loaded'} })
     });
     window.dispatchEvent(event);
   };
