@@ -100,6 +100,7 @@ class Panel {
 		this.pageMod = pageMod.PageMod({
 		  include: self.data.url(contentURL),
 		  contentScriptFile: self.data.url(contentScriptFile),
+		  attachTo: ['existing', 'frame'],
 		  onAttach: function(worker) {
 		    throw new Error('pagemod attached'); console.log('pagemod attached');
 		    // try not using 'this' and see if it helps
