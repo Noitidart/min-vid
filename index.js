@@ -61,6 +61,11 @@ class Panel {
 		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
 		this.onContentMessage = this.onContentMessage.bind(this);
+		this.whenPortReady = this.whenPortReady.bind(this);
+
+		// Panel.port is available async, so queue up callbacks while we're waiting
+		// for it to be initialized.
+		this._portReadyCallbacks = [];
 
 		// PageMod-related state is initialized async.
 		this.pageMod = null;
@@ -68,7 +73,6 @@ class Panel {
 		this.port = null;
     this._initPageMod(opts.contentURL, opts.contentScriptFile);
 
-		// panel is instantiated on first show() call
 		this.el = null;
 		// keep a pointer to the panel iframe for convenience
 		this.frame = null;
@@ -81,6 +85,10 @@ class Panel {
 
 		// TODO: figure out what to do with position
 		this.position = opts.position;
+		// panel is instantiated on first show() call
+
+		// init the panel early, so that the pagemod attaches
+		this._createPanel(opts.contentURL);
 	}
 	
   // TODO: will this attach to _every_ copy of default.html?
@@ -96,6 +104,7 @@ class Panel {
 		    this.frameWorker = worker;
 		    this.port = worker.port;
         this.port.on('addon-message', this.onContentMessage);
+        this._portReadyCallbacks.forEach(cb => cb());
 		  },
 		  onError: (err) => {
 		    // We really can't continue if the PageMod doesn't attach.
@@ -105,7 +114,7 @@ class Panel {
 	}
 
 	// _createPanel sets this.el and inserts the panel into the DOM
-	_createPanel() {
+	_createPanel(contentURL) {
 		// Note: win is a XUL window, not a DOM window
 		this.win = Services.wm.getMostRecentWindow('navigator:browser');
 
@@ -120,7 +129,7 @@ class Panel {
 		this.frame.width = this.width;
 		this.frame.height = this.height;
 		this.frame.id = 'minvid-frame';
-		this.frame.setAttribute('src', self.data.url(this.opts.contentURL));
+		this.frame.setAttribute('src', self.data.url(contentURL));
 		this.el.appendChild(this.frame);
 
 		let label = this.win.document.createElement('label');
@@ -146,14 +155,13 @@ class Panel {
 
 		// TODO: just for testing: let's put a pointer out there so we can play with this stuff
 		this.win.minVidPanel = this;
+
+		// TODO: what if we just show/hide it? will that init the port?
+		this.show();
+		this.hide();
 	}
 
 	show(opts) {
-		// lazily create the panel
-		if (!this.el) {
-			this._createPanel();
-		}
-
 		// map opts onto popup state
 		this.height = opts && opts.height || this.height;
 		this.position = opts && opts.position || this.position;
@@ -172,6 +180,14 @@ class Panel {
 	  // hard-coded for now, not sure getters can be bound
 	  return false;
 		// return this.el && this.el.state == 'open';
+	}
+
+	whenPortReady(cb) {
+	  if (this.port) {
+	    cb();
+	  } else {
+	    this._portReadyCallbacks.push(cb);
+	  }
 	}
 
   onContentMessage(opts) {
@@ -363,7 +379,7 @@ cm.Item({
 });
 
 function updatePanel(opts) {
-  panel.port.emit('set-video', opts);
+  panel.whenPortReady(() => { panel.port.emit('set-video', opts); });
   panel.show();
 }
 
