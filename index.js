@@ -91,15 +91,22 @@ class Panel {
   // Maybe using tabs.worker will be better? Attach to just the one page?
   // Or, maybe this will push us in the direction of a single global
   // preview panel?
+
+	// TODO: hahaha, I need to use attachTo so it sees the already-open panel html.
+	// maybe just use tabs to get the panel when it's created: put a unique
+	// query string on it, use tabs to find the one with the matching query string,
+	// then get that port, and assign it. do that next.
 	_initPageMod(contentURL, contentScriptFile) {
 		this.pageMod = pageMod.PageMod({
 		  include: self.data.url(contentURL),
 		  contentScriptFile: self.data.url(contentScriptFile),
-		  onAttach: (worker) => {
-		    console.log('pagemod attached');
-		    this.frameWorker = worker;
-		    this.port = worker.port;
-        this.port.on('addon-message', this.onContentMessage);
+		  onAttach: function(worker) {
+		    throw new Error('pagemod attached'); console.log('pagemod attached');
+		    // try not using 'this' and see if it helps
+		    // TODO: Beware, this will overwrite port if we run more than once.
+		    panel.frameWorker = worker;
+		    panel.port = worker.port;
+        panel.port.on('addon-message', panel.onContentMessage);
 		  },
 		  onError: (err) => {
 		    // We really can't continue if the PageMod doesn't attach.
