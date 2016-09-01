@@ -61,11 +61,6 @@ class Panel {
 		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
 		this.onContentMessage = this.onContentMessage.bind(this);
-		this.whenPortReady = this.whenPortReady.bind(this);
-
-		// Panel.port is available async, so queue up callbacks while we're waiting
-		// for it to be initialized.
-		this._portReadyCallbacks = [];
 
 		// PageMod-related state is initialized async.
 		this.pageMod = null;
@@ -180,14 +175,6 @@ class Panel {
 	  // hard-coded for now, not sure getters can be bound
 	  return false;
 		// return this.el && this.el.state == 'open';
-	}
-
-	whenPortReady(cb) {
-	  if (this.port) {
-	    cb();
-	  } else {
-	    this._portReadyCallbacks.push(cb);
-	  }
 	}
 
   onContentMessage(opts) {
@@ -379,7 +366,7 @@ cm.Item({
 });
 
 function updatePanel(opts) {
-  panel.whenPortReady(() => { panel.port.emit('set-video', opts); });
+  panel.port.emit('set-video', opts);
   panel.show();
 }
 
