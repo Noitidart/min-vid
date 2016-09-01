@@ -93,13 +93,13 @@ class Panel {
   // preview panel?
 	_initPageMod(contentURL, contentScriptFile) {
 		this.pageMod = pageMod.PageMod({
-		  include: contentURL,
-		  contentScriptFile: contentScriptFile,
+		  include: self.data.url(contentURL),
+		  contentScriptFile: self.data.url(contentScriptFile),
 		  onAttach: (worker) => {
+		    console.log('pagemod attached');
 		    this.frameWorker = worker;
 		    this.port = worker.port;
         this.port.on('addon-message', this.onContentMessage);
-        this._portReadyCallbacks.forEach(cb => cb());
 		  },
 		  onError: (err) => {
 		    // We really can't continue if the PageMod doesn't attach.
@@ -110,6 +110,7 @@ class Panel {
 
 	// _createPanel sets this.el and inserts the panel into the DOM
 	_createPanel(contentURL) {
+	  console.log('_createPanel called, contentURL is ', contentURL);
 		// Note: win is a XUL window, not a DOM window
 		this.win = Services.wm.getMostRecentWindow('navigator:browser');
 
@@ -224,7 +225,6 @@ const panel = new Panel({
     left: 10
   }
 });
-
 
 function sendMetricsData(o) {
   if (!panel.el) { return; } // TODO: fix. caused by lazy-loading the panel, metrics tries to check it before it exists
