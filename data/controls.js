@@ -4,11 +4,13 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
+console.log('data/controls.js loaded');
+
 // When the window loads, send a WebChannel message to chrome to initialize the channel.
 function connect() {
-  function _onWindowLoaded {
+  function _onWindowLoaded() {
     let event = new window.CustomEvent('WebChannelMessageToChrome', {
-      detail: JSON.stringify({ type: 'frame-loaded' });
+      detail: JSON.stringify({ type: 'frame-loaded' })
     });
     window.dispatchEvent(event);
   };
