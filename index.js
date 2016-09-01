@@ -16,7 +16,6 @@ const getYouTubeUrl = require('./lib/get-youtube-url.js');
 const getVimeoUrl = require('./lib/get-vimeo-url.js');
 const getVineUrl = require('./lib/get-vine-url.js');
 const getDocumentDimensions = require('./lib/get-document-dimensions.js');
-const Transport = require('./lib/transport.js');
 const pageMod = require('sdk/page-mod');
 const cm = require('sdk/context-menu');
 
@@ -58,8 +57,26 @@ class Panel {
 	constructor(opts) {
 		// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left }
 
-		this.opts = opts; // wtfever
-		this.port = new Transport(self.data.url(this.opts.contentURL));
+		this.opts = opts; // TODO: just storing a pointer for the moment. assign individually if we need em later
+
+		this.frameWorker = null;
+		this.port = null;
+		// create pageMod.
+		// load the controls.js script.
+		// assign this.port in the worker callback.
+		this.pageMod = pageMod.PageMod({
+		  include: opts.contentURL,
+		  contentScriptFile: opts.contentScriptFile,
+		  onAttach: (worker) => {
+		    this.frameWorker = worker;
+		    this.port = worker.port;
+		  },
+		  onError: (err) => {
+		    // TODO: should we retry on error? when would this throw?
+		    console.error(`PageMod failed to attach to ${opts.contentURL}: `, err);
+		  }
+		});
+
 		// panel is instantiated on first show() call
 		this.el = null;
 		// keep a pointer to the panel iframe for convenience

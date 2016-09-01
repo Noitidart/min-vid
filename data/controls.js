@@ -4,44 +4,20 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-// webchannel ID sent over by chrome
-// TODO: while debugging, just using one global static name
-let channelId = 'minvid';
-
-window.addEventListener("WebChannelMessageToContent", function(e) {
-  console.log('controls.js received postmessage event: ', e);
-
-  // TODO: uncomment when we figure out channel initialization sequence
-  //channelId = e.detail.id;
-
-  if (e.detail.message.type == 'set-video') {
-    let opts = Object.assign(e.detail.message.data, {
-      loaded: false,
-      error: false,
-      progress: 0,
-      playing: false,
-      volume: '0.5'
-    });
-    unsafeWindow.AppData = Object.assign(unsafeWindow.AppData, opts);
-  }
+self.port.on('set-video', opts => {
+  opts = Object.assign(opts, {
+    loaded: false,
+    error: false,
+    progress: 0,
+    playing: false,
+    volume: '0.5'
+  });
+  unsafeWindow.AppData = Object.assign(unsafeWindow.AppData, opts);
 });
 
 // Bridge between app.js window messages to the
 // addon. We pass true for the wantsUntrusted param
 // in order to access the message events. #82
 window.addEventListener('addon-message', function(ev) {
-  if (!channelId) {
-    console.error('content tried to send a message before addon initialized webchannel id: ', ev);
-    return;
-  }
-
-  window.dispatchEvent(new window.CustomEvent("WebChannelMessageToChrome", {
-    detail: JSON.stringify({
-      id: channelId,
-      message: {
-        type: 'addon-message',
-        data: ev.detail
-      }
-    })
-  }));
+  self.port.emit('addon-message', ev.detail);
 }, false, true);
