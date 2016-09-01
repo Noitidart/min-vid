@@ -16,6 +16,7 @@ const getYouTubeUrl = require('./lib/get-youtube-url.js');
 const getVimeoUrl = require('./lib/get-vimeo-url.js');
 const getVineUrl = require('./lib/get-vine-url.js');
 const getDocumentDimensions = require('./lib/get-document-dimensions.js');
+const Transport = require('./lib/transport.js');
 const pageMod = require('sdk/page-mod');
 const cm = require('sdk/context-menu');
 
@@ -54,20 +55,12 @@ self.on('click', function (node, data) {
 let dimensions = getDocumentDimensions();
 
 class Panel {
-	// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left } }
 	constructor(opts) {
+		// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left }
 
-		// Public API
-		this.show = this.show.bind(this);
-		this.hide = this.hide.bind(this);
-		this.onContentMessage = this.onContentMessage.bind(this);
-
-		// PageMod-related state is initialized async.
-		this.pageMod = null;
-		this.frameWorker = null;
-		this.port = null;
-    this._initPageMod(opts.contentURL, opts.contentScriptFile);
-
+		this.opts = opts; // wtfever
+		this.port = new Transport(self.data.url(this.opts.contentURL));
+		// panel is instantiated on first show() call
 		this.el = null;
 		// keep a pointer to the panel iframe for convenience
 		this.frame = null;
@@ -75,50 +68,19 @@ class Panel {
 		this.win = null;
 
 		// dimensions change when minimizing or resizing
-		this.height = opts.height || 180;
-		this.width = opts.width || 320;
+		this.height = this.opts.height || 180;
+		this.width = this.opts.width || 320;
 
 		// TODO: figure out what to do with position
-		this.position = opts.position;
-		// panel is instantiated on first show() call
+		this.position = this.opts.position;
 
-		// init the panel early, so that the pagemod attaches
-		this._createPanel(opts.contentURL);
-	}
-	
-  // TODO: will this attach to _every_ copy of default.html?
-  // If so, won't that lead to a lot of problems with multiple windows?
-  // Maybe using tabs.worker will be better? Attach to just the one page?
-  // Or, maybe this will push us in the direction of a single global
-  // preview panel?
-
-	// TODO: hahaha, I need to use attachTo so it sees the already-open panel html.
-	// maybe just use tabs to get the panel when it's created: put a unique
-	// query string on it, use tabs to find the one with the matching query string,
-	// then get that port, and assign it. do that next.
-	_initPageMod(contentURL, contentScriptFile) {
-		this.pageMod = pageMod.PageMod({
-		  include: self.data.url(contentURL),
-		  contentScriptFile: self.data.url(contentScriptFile),
-		  attachTo: ['existing', 'frame'],
-		  onAttach: function(worker) {
-		    throw new Error('pagemod attached'); console.log('pagemod attached');
-		    // try not using 'this' and see if it helps
-		    // TODO: Beware, this will overwrite port if we run more than once.
-		    panel.frameWorker = worker;
-		    panel.port = worker.port;
-        panel.port.on('addon-message', panel.onContentMessage);
-		  },
-		  onError: (err) => {
-		    // We really can't continue if the PageMod doesn't attach.
-		    throw new Error(`PageMod failed to attach to ${opts.contentURL}: `, err);
-		  }
-		});
+		// TODO: find a cleaner way // 'this is why we can't have nice things'
+		this.show = this.show.bind(this);
+		this.hide = this.hide.bind(this);
 	}
 
 	// _createPanel sets this.el and inserts the panel into the DOM
-	_createPanel(contentURL) {
-	  console.log('_createPanel called, contentURL is ', contentURL);
+	_createPanel() {
 		// Note: win is a XUL window, not a DOM window
 		this.win = Services.wm.getMostRecentWindow('navigator:browser');
 
@@ -133,7 +95,7 @@ class Panel {
 		this.frame.width = this.width;
 		this.frame.height = this.height;
 		this.frame.id = 'minvid-frame';
-		this.frame.setAttribute('src', self.data.url(contentURL));
+		this.frame.setAttribute('src', self.data.url(this.opts.contentURL));
 		this.el.appendChild(this.frame);
 
 		let label = this.win.document.createElement('label');
@@ -157,15 +119,16 @@ class Panel {
 
 		this.win.document.documentElement.appendChild(this.el);
 
-		// TODO: just for testing: let's put a pointer out there so we can play with this stuff
+		// let's put a pointer out there, so we can play with this stuff
 		this.win.minVidPanel = this;
-
-		// TODO: what if we just show/hide it? will that init the port?
-		this.show();
-		this.hide();
 	}
 
 	show(opts) {
+		// lazily create the panel
+		if (!this.el) {
+			this._createPanel();
+		}
+
 		// map opts onto popup state
 		this.height = opts && opts.height || this.height;
 		this.position = opts && opts.position || this.position;
@@ -185,42 +148,6 @@ class Panel {
 	  return false;
 		// return this.el && this.el.state == 'open';
 	}
-
-  onContentMessage(opts) {
-    console.log('index.js addon-message callback called, opts is ', opts);
-    const title = opts.type;
-
-    if (title === 'send-to-tab') {
-      const pageUrl = getPageUrl(opts.domain, opts.id, opts.time);
-      if (pageUrl) require('sdk/tabs').open(pageUrl);
-      else console.error('could not parse page url for ', opts); // eslint-disable-line no-console
-      updatePanel({domain: '', src: ''});
-      panel.hide();
-    } else if (title === 'close') {
-      updatePanel({domain: '', src: ''});
-      panel.hide();
-    } else if (title === 'minimize') {
-      panel.hide();
-      panel.show({
-        height: 40,
-        position: {
-          bottom: 0,
-          left: 10
-        }
-      });
-    } else if (title === 'maximize') {
-      panel.hide();
-      panel.show({
-        height: 180,
-        position: {
-          bottom: 10,
-          left: 10
-        }
-      });
-    } else if (title === 'metrics-event') {
-      sendMetricsData(opts);
-    }
-	}
 }
 
 const panel = new Panel({
@@ -231,6 +158,42 @@ const panel = new Panel({
   position: {
     bottom: 10,
     left: 10
+  }
+});
+
+panel.port.on('addon-message', opts => {
+  console.log('index.js addon-message callback called, opts is ', opts);
+  const title = opts.type;
+
+  if (title === 'send-to-tab') {
+    const pageUrl = getPageUrl(opts.domain, opts.id, opts.time);
+    if (pageUrl) require('sdk/tabs').open(pageUrl);
+    else console.error('could not parse page url for ', opts); // eslint-disable-line no-console
+    updatePanel({domain: '', src: ''});
+    panel.hide();
+  } else if (title === 'close') {
+    updatePanel({domain: '', src: ''});
+    panel.hide();
+  } else if (title === 'minimize') {
+    panel.hide();
+    panel.show({
+      height: 40,
+      position: {
+        bottom: 0,
+        left: 10
+      }
+    });
+  } else if (title === 'maximize') {
+    panel.hide();
+    panel.show({
+      height: 180,
+      position: {
+        bottom: 10,
+        left: 10
+      }
+    });
+  } else if (title === 'metrics-event') {
+    sendMetricsData(opts);
   }
 });
 
