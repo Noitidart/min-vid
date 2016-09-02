@@ -19,6 +19,8 @@ const getDocumentDimensions = require('./lib/get-document-dimensions.js');
 const Transport = require('./lib/transport.js');
 const pageMod = require('sdk/page-mod');
 const cm = require('sdk/context-menu');
+var { setTimeout } = require("sdk/timers");
+
 
 const URLS = {
   'vimeo': ['vimeo.com/'],
@@ -399,3 +401,22 @@ pageMod.PageMod({
     });
   }
 });
+
+// XXX Testing: let's try to fire a message to content and see what happens
+let w = Services.wm.getMostRecentWindow('navigator:browser');
+let b = w.gBrowser.selectedBrowser;
+setTimeout(() => {
+  console.log('about to send message to content');
+  try { 
+    b.messageManager.sendAsyncMessage(
+      'WebChannelMessageToContent',
+      { id: 'minvid', message: JSON.stringify({ type: 'set-video', message: { foo: 'frame-loaded' } }) },
+      { eventTarget: w.document.getElementById('minvid-frame').contentDocument },
+      // Services.scriptSecurityManager.createCodebasePrincipalFromOrigin('resource://min-vid/data/default.html')
+      Services.scriptSecurityManager.getSystemPrincipal()
+    );
+    console.log('just sent message to content');
+  } catch (ex) {
+    console.error('failed to send message to content: ', ex);
+  }
+}, 5000);
