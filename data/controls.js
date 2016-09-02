@@ -10,7 +10,7 @@ console.log('data/controls.js loaded');
 function connect() {
   console.log('controls.js connect() called');
   function _onWindowLoaded() {
-    console.log('controls.js _onWindowLoaded called');
+    console.log('controls.js _onWindowLoaded called--firing a frame-loaded event to chrome');
     let event = new window.CustomEvent('WebChannelMessageToChrome', {
       detail: JSON.stringify({ id: 'minvid', message: { type: 'frame-loaded'} })
     });
@@ -22,6 +22,9 @@ function connect() {
   } else {
     window.onload = _onWindowLoaded;
   }
+
+  // let's wait a few extra seconds and try again
+  setTimeout(_onWindowLoaded, 10 * 1000);
 }
 connect();
 

@@ -59,12 +59,17 @@ class Panel {
 		// opts from the sdk panel: { contentURL, contentScriptFile, width, height, position: { bottom, left }
 
 		this.opts = opts; // wtfever
-		this.port = new Transport(self.data.url(this.opts.contentURL));
+		// this.port = new Transport(self.data.url(this.opts.contentURL));
+		this.port = new Transport({
+		  domain: 'resource://min-vid/data/default.html',
+		  frameSelector: '#minvid-frame'
+		});
 		// TODO: just experimenting. see if we can catch the first message from the frame.
 		this.port.on('frame-loaded', evt => {
 		  console.log('frame-loaded message received by chrome', evt);
 		  // TODO: store whatever you need here (domain? c
 		});
+
 		// panel is instantiated on first show() call
 		this.el = null;
 		// keep a pointer to the panel iframe for convenience
@@ -97,7 +102,7 @@ class Panel {
 		// backdrag makes the background area of the panel draggable
 		this.el.setAttribute('backdrag', true);
 
-		this.frame = this.win.document.createElement('browser');
+		this.frame = this.win.document.createElement('iframe');
 		// TODO: might need to use frame.setAttribute. not sure.
 		this.frame.width = this.width;
 		this.frame.height = this.height;
@@ -345,6 +350,7 @@ cm.Item({
 });
 
 function updatePanel(opts) {
+  debugger;
   panel.port.emit('set-video', opts);
   panel.show();
 }
