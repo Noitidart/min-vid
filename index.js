@@ -6,13 +6,13 @@
 
 const system = require('sdk/system');
 const pageMod = require('sdk/page-mod');
+const { getActiveView } = require('sdk/view/core');
 const getYouTubeUrl = require('./lib/get-youtube-url.js');
 const getVimeoUrl = require('./lib/get-vimeo-url.js');
 const launchVideo = require('./lib/launch-video');
 const sendMetricsData = require('./lib/send-metrics-data.js');
 const initContextMenuHandlers = require('./lib/context-menu-handlers.js');
 const makePanelDraggable = require('./lib/make-panel-draggable.js');
-const { getActiveView } = require('sdk/view/core');
 
 const panel = require('sdk/panel').Panel({
   contentURL: './default.html',
@@ -32,6 +32,30 @@ if (system.platform === 'winnt' || system.platform === 'darwin') {
   makePanelDraggable(panel);
 }
 
+function adjustHeight(newHeight) {
+  const xulPanel = getActiveView(panel);
+  const frame = xulPanel.getElementsByTagName('iframe')[0];
+
+  frame.setAttribute('height', newHeight);
+  xulPanel.setAttribute('height', newHeight);
+
+  // travel up the DOM to get a document pointer
+  let doc = xulPanel;
+  while (doc !== null && doc.nodeType !== 9) {
+    doc = doc.parentNode;
+  }
+
+  // Next, get the current position of the panel, so we can minimize / maximize
+  // after it's been dragged.
+  const { bottom, left } = xulPanel.getBoundingClientRect();
+
+  // TODO: currently not shifting the controls downward when minimizing because the
+  // positioning breaks after the panel is dragged. Not sure of the cause. Maybe
+  // XUL does something quirky with getBoundingClientRect? Maybe the panel gets put
+  // under a different parent document? No idea.
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', left, bottom);
+}
+
 panel.port.on('addon-message', opts => {
   const title = opts.action;
 
@@ -46,25 +70,13 @@ panel.port.on('addon-message', opts => {
     panel.hide();
   } else if (title === 'close') {
     panel.port.emit('set-video', {domain: '', src: ''});
+    // If the panel has been minimized, reset it to full height.
+    adjustHeight(180);
     panel.hide();
   } else if (title === 'minimize') {
-    panel.hide();
-    panel.show({
-      height: 40,
-      position: {
-        bottom: 0,
-        left: 10
-      }
-    });
+    adjustHeight(40);
   } else if (title === 'maximize') {
-    panel.hide();
-    panel.show({
-      height: 180,
-      position: {
-        bottom: 10,
-        left: 10
-      }
-    });
+    adjustHeight(180);
   } else if (title === 'metrics-event') {
     sendMetricsData(opts, panel);
   }
