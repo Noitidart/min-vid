@@ -25,6 +25,9 @@ const panel = require('sdk/panel').Panel({
   }
 });
 
+// Init the panel's location state
+let panelCoords = { bottom: -10, left: 10 };
+
 getActiveView(panel).setAttribute('noautohide', true);
 
 // Draggability seems to work for windows and mac, but not linux.
@@ -32,12 +35,18 @@ if (system.platform === 'winnt' || system.platform === 'darwin') {
   makePanelDraggable(panel);
 }
 
-function adjustHeight(newHeight) {
+function adjustHeight(newHeight, isMinimize) {
+  console.log('adjustHeight');
   const xulPanel = getActiveView(panel);
+  const stack = xulPanel.getElementsByTagName('stack')[0];
   const frame = xulPanel.getElementsByTagName('iframe')[0];
 
+  // What if we just resized instead?
+  //xulPanel.setAttribute('height', newHeight);
   frame.setAttribute('height', newHeight);
-  xulPanel.setAttribute('height', newHeight);
+  stack.setAttribute('height', newHeight);
+  xulPanel.sizeTo(320, newHeight);
+
 
   // travel up the DOM to get a document pointer
   let doc = xulPanel;
@@ -45,15 +54,42 @@ function adjustHeight(newHeight) {
     doc = doc.parentNode;
   }
 
+
   // Next, get the current position of the panel, so we can minimize / maximize
   // after it's been dragged.
   const { bottom, left } = xulPanel.getBoundingClientRect();
 
-  // TODO: currently not shifting the controls downward when minimizing because the
-  // positioning breaks after the panel is dragged. Not sure of the cause. Maybe
-  // XUL does something quirky with getBoundingClientRect? Maybe the panel gets put
-  // under a different parent document? No idea.
-  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', left, bottom);
+  let newBottom;
+  if (isMinimize) {
+    newBottom = bottom < 0 ? bottom - 140 : bottom + 140;
+  } else {
+    newBottom = bottom < 0 ? bottom + 140 : bottom - 140;
+  }
+
+  // Store the offset from the bottom-left of the browser window. Not the absolute coords.
+  panelCoords.bottom = newBottom;
+  panelCoords.left = left;
+
+  // In the case of minimizing, add 140 to the y-coordinate. moveToAnchor doesn't
+  // recalculate when part of the panel is hidden :-\
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panelCoords.left, panelCoords.bottom); 
+}
+
+function redrawPanel() {
+  console.log('redrawPanel, moving to ', panelCoords.left, panelCoords.bottom);
+  const xulPanel = getActiveView(panel);
+
+  // travel up the DOM to get a document pointer
+  let doc = xulPanel;
+  while (doc !== null && doc.nodeType !== 9) {
+    doc = doc.parentNode;
+  }
+
+  // get the size of the document, then subtract the panelCoords to
+  // correctly reposition the panel.
+  const { docBottom, docLeft } = doc.documentElement.getBoundingClientRect();
+  
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', docBottom + panelCoords.left, panelCoords.bottom);
 }
 
 panel.port.on('addon-message', opts => {
@@ -74,7 +110,7 @@ panel.port.on('addon-message', opts => {
     adjustHeight(180);
     panel.hide();
   } else if (title === 'minimize') {
-    adjustHeight(40);
+    adjustHeight(40, true);
   } else if (title === 'maximize') {
     adjustHeight(180);
   } else if (title === 'metrics-event') {
@@ -103,9 +139,9 @@ pageMod.PageMod({
   contentScriptFile: './resize-listener.js',
   onAttach: function(worker) {
     worker.port.on('resized', function() {
+      console.log('resized');
       if (panel.isShowing) {
-        panel.hide();
-        panel.show();
+        redrawPanel();
       }
     });
   }
