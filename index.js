@@ -27,7 +27,7 @@ const panel = require('sdk/panel').Panel({
 
 // Init the panel's location state
 // XXX note this should be the offset relative to bottom-left corner of browser window.
-let panelCoords = { bottomOffset: -10, leftOffset: 10 };
+panel.coords = { bottomOffset: -10, leftOffset: 10 };
 
 getActiveView(panel).setAttribute('noautohide', true);
 
@@ -56,7 +56,7 @@ function adjustHeight(newHeight, isMinimize) {
 
   // In the case of minimizing, add 140 to the y-coordinate. moveToAnchor doesn't
   // recalculate when part of the panel is hidden :-\
-  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panelCoords.leftOffset, panelCoords.bottomOffset); 
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panel.coords.leftOffset, panel.coords.bottomOffset); 
 }
 
 function redrawPanel() {
@@ -68,7 +68,8 @@ function redrawPanel() {
     doc = doc.parentNode;
   }
 
-  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panelCoords.leftOffset, panelCoords.bottomOffset);
+  console.log('redrawPanel, moving to: (x, y) ', panel.coords.leftOffset, panel.coords.bottomOffset);
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panel.coords.leftOffset, panel.coords.bottomOffset);
 }
 
 panel.port.on('addon-message', opts => {
@@ -118,7 +119,6 @@ pageMod.PageMod({
   contentScriptFile: './resize-listener.js',
   onAttach: function(worker) {
     worker.port.on('resized', function() {
-      console.log('resized');
       if (panel.isShowing) {
         redrawPanel();
       }
