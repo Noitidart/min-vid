@@ -26,7 +26,8 @@ const panel = require('sdk/panel').Panel({
 });
 
 // Init the panel's location state
-let panelCoords = { bottom: -10, left: 10 };
+// XXX note this should be the offset relative to bottom-left corner of browser window.
+let panelCoords = { bottomOffset: -10, leftOffset: 10 };
 
 getActiveView(panel).setAttribute('noautohide', true);
 
@@ -47,36 +48,18 @@ function adjustHeight(newHeight, isMinimize) {
   stack.setAttribute('height', newHeight);
   xulPanel.sizeTo(320, newHeight);
 
-
   // travel up the DOM to get a document pointer
   let doc = xulPanel;
   while (doc !== null && doc.nodeType !== 9) {
     doc = doc.parentNode;
   }
 
-
-  // Next, get the current position of the panel, so we can minimize / maximize
-  // after it's been dragged.
-  const { bottom, left } = xulPanel.getBoundingClientRect();
-
-  let newBottom;
-  if (isMinimize) {
-    newBottom = bottom < 0 ? bottom - 140 : bottom + 140;
-  } else {
-    newBottom = bottom < 0 ? bottom + 140 : bottom - 140;
-  }
-
-  // Store the offset from the bottom-left of the browser window. Not the absolute coords.
-  panelCoords.bottom = newBottom;
-  panelCoords.left = left;
-
   // In the case of minimizing, add 140 to the y-coordinate. moveToAnchor doesn't
   // recalculate when part of the panel is hidden :-\
-  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panelCoords.left, panelCoords.bottom); 
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panelCoords.leftOffset, panelCoords.bottomOffset); 
 }
 
 function redrawPanel() {
-  console.log('redrawPanel, moving to ', panelCoords.left, panelCoords.bottom);
   const xulPanel = getActiveView(panel);
 
   // travel up the DOM to get a document pointer
@@ -85,11 +68,7 @@ function redrawPanel() {
     doc = doc.parentNode;
   }
 
-  // get the size of the document, then subtract the panelCoords to
-  // correctly reposition the panel.
-  const { docBottom, docLeft } = doc.documentElement.getBoundingClientRect();
-  
-  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', docBottom + panelCoords.left, panelCoords.bottom);
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panelCoords.leftOffset, panelCoords.bottomOffset);
 }
 
 panel.port.on('addon-message', opts => {
