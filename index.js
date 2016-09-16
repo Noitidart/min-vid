@@ -32,8 +32,8 @@ const panel = require('sdk/panel').Panel({
   }
 });
 
-// Init the panel's location state. Screen coords, not client coords.
-panel.coords = { y: 10, x: 10 };
+// Init the panel's location state
+panel.coords = { bottomOffset: -10, leftOffset: 10 };
 
 getActiveView(panel).setAttribute('noautohide', true);
 
@@ -67,7 +67,7 @@ function redrawPanel() {
     doc = doc.parentNode;
   }
 
-  xulPanel.moveToAnchor(null, null, panel.coords.x, panel.coords.y);
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panel.coords.leftOffset, panel.coords.bottomOffset);
 }
 
 panel.port.on('addon-message', opts => {
