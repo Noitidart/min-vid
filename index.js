@@ -60,9 +60,7 @@ function updateDocumentAnchor(evt) {
       return;
     }
     console.log('we found a new window! moving the panel there now');
-    // We found a new window! Cancel the event and move this party over there.
-    evt.stopImmediatePropagation();
-    evt.preventDefault();
+    // We found a new window! Move this party over there.
     const xulPanel = getActiveView(panel);
     xulPanel.parentNode.removeChild(xulPanel);
     const newPopupSet = newWindow.document.getElementById('mainPopupSet');
@@ -70,7 +68,7 @@ function updateDocumentAnchor(evt) {
   }
 }
 const xulPanel = getActiveView(panel)
-xulPanel.addEventListener('popuphiding', updateDocumentAnchor);
+xulPanel.ownerGlobal.addEventListener('close', updateDocumentAnchor);
 
 
 function adjustHeight(newHeight) {
