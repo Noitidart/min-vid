@@ -43,34 +43,6 @@ if (system.platform === 'winnt' || system.platform === 'darwin') {
   setTimeout(() => { makePanelDraggable(panel, dimensions); }, 5000);
 }
 
-// If the panel's opening tab is closed, prevent it from being destroyed
-// by reattaching it to whatever other browser window is available.
-function updateDocumentAnchor(evt) {
-  console.log('updateDocumentAnchor called. evt is: ', evt);
-  // 1. Is the panel's parent window closed? If so, we need to find a new home,
-  // so find another window; if one's found, cancel the event and move it to
-  // the new DOM. If not, there's nothing more we can do.
-  // TODO: also check that Firefox isn't shutting down.
-
-  if (getActiveView(panel).ownerGlobal.closed) {
-    const newWindow = Services.wm.getMostRecentWindow('navigator:browser');
-    if (newWindow.closed) {
-      // TODO: iterate some windows to find one that isn't closing.
-      console.error('ugh, newWindow is closed too. I give up');
-      return;
-    }
-    console.log('we found a new window! moving the panel there now');
-    // We found a new window! Move this party over there.
-    const xulPanel = getActiveView(panel);
-    xulPanel.parentNode.removeChild(xulPanel);
-    const newPopupSet = newWindow.document.getElementById('mainPopupSet');
-    newPopupSet.appendChild(xulPanel);
-  }
-}
-const xulPanel = getActiveView(panel)
-xulPanel.ownerGlobal.addEventListener('close', updateDocumentAnchor);
-
-
 function adjustHeight(newHeight) {
   // Resize the panel by changing the height of the panel, iframe, and stack
   // elements.
@@ -89,7 +61,13 @@ function adjustHeight(newHeight) {
 function redrawPanel() {
   const xulPanel = getActiveView(panel);
 
-  xulPanel.moveToAnchor(xulPanel.ownerDocument.documentElement, 'bottomleft bottomleft', panel.coords.leftOffset, panel.coords.bottomOffset);
+  // travel up the DOM to get a document pointer
+  let doc = xulPanel;
+  while (doc !== null && doc.nodeType !== 9) {
+    doc = doc.parentNode;
+  }
+
+  xulPanel.moveToAnchor(doc.documentElement, 'bottomleft bottomleft', panel.coords.leftOffset, panel.coords.bottomOffset);
 }
 
 panel.port.on('addon-message', opts => {
