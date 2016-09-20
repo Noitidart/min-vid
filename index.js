@@ -16,8 +16,8 @@ const dimensions = {
 };
 
 const panelOptions = {
-  contentURL: './default.html',
-  contentScriptFile: './controls.js',
+  contentURL: './default.html?cachebust=' + Date.now(),
+  contentScriptFile: './controls.js?cachebust=' + Date.now(),
   width: dimensions.width,
   height: dimensions.height,
   position: {
