@@ -5,6 +5,7 @@
  */
 
 const { getActiveView } = require('sdk/view/core');
+const { setTimeout } = require('sdk/timers');
 const initContextMenuHandlers = require('./lib/context-menu-handlers.js');
 const panelUtils = require('./lib/panel.js');
 
@@ -28,7 +29,7 @@ const panelOptions = {
 
 // TODO: I think we actually don't need a panel pointer here, since we can
 // always get it from panelUtils.getPanel() ^_^
-panelUtils.create(dimensions, panelOptions);
+setTimeout(() => { panelUtils.create(dimensions, panelOptions) }, 5000);
 
 // add 'send-to-mini-player' option to context menu
 initContextMenuHandlers();
