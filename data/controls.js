@@ -4,6 +4,9 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
+// Fire a signal when the worker is ready, so we can start sending signals.
+self.port.emit('worker-ready');
+
 self.port.on('set-video', opts => {
   opts = Object.assign(opts, {
     loaded: false,
