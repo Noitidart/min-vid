@@ -22,7 +22,6 @@ const dimensions = {
   minimizedHeight: 40
 };
 
-// TODO: do we really need to create the panel here at all?
 panelUtils.create(dimensions, {
   contentURL: './default.html?cachebust=' + Date.now(),
   contentScriptFile: './controls.js?cachebust=' + Date.now(),
@@ -34,51 +33,53 @@ panelUtils.create(dimensions, {
   }
 });
 
-// handle browser resizing
-pageMod.PageMod({
-  include: '*',
-  contentScriptFile: './resize-listener.js?cachebust=' + Date.now(),
-  onAttach: function(worker) {
-    worker.port.on('resized', function() {
-      const panel = panelUtils.getPanel();
-      if (panel.isShowing) {
-        panelUtils.redraw();
-      }
-    });
-  }
+panelUtils.whenPanelReady(() => {
+  // handle browser resizing
+  pageMod.PageMod({
+    include: '*',
+    contentScriptFile: './resize-listener.js?cachebust=' + Date.now(),
+    onAttach: function(worker) {
+      worker.port.on('resized', function() {
+        const panel = panelUtils.getPanel();
+        if (panel.isShowing) {
+          panelUtils.redraw();
+        }
+      });
+    }
+  });
+
+  // add launch icon to video embeds
+  pageMod.PageMod({
+    include: '*',
+    contentStyleFile: './icon-overlay.css?cachebust=' + Date.now(),
+    contentScriptFile: './icon-overlay.js?cachebust=' + Date.now(),
+    onAttach: function(worker) {
+      worker.port.on('launch', function(opts) {
+        if (opts.domain.indexOf('youtube.com') > -1) {
+          opts.getUrlFn = getYouTubeUrl;
+          sendMetricsData({
+            object: 'overlay_icon',
+            method: 'launch',
+            domain: opts.domain
+          });
+          launchVideo(opts);
+        } else if (opts.domain.indexOf('vimeo.com')  > -1) {
+          opts.getUrlFn = getVimeoUrl;
+          sendMetricsData({
+            object: 'overlay_icon',
+            method: 'launch',
+            domain: opts.domain
+          });
+          launchVideo(opts);
+        }
+      });
+
+      worker.port.on('metrics', function(opts) {
+        sendMetricsData(opts);
+      });
+    }
+  });
+
+  // add 'send-to-mini-player' option to context menu
+  initContextMenuHandlers();
 });
-
-// add launch icon to video embeds
-pageMod.PageMod({
-  include: '*',
-  contentStyleFile: './icon-overlay.css?cachebust=' + Date.now(),
-  contentScriptFile: './icon-overlay.js?cachebust=' + Date.now(),
-  onAttach: function(worker) {
-    worker.port.on('launch', function(opts) {
-      if (opts.domain.indexOf('youtube.com') > -1) {
-        opts.getUrlFn = getYouTubeUrl;
-        sendMetricsData({
-          object: 'overlay_icon',
-          method: 'launch',
-          domain: opts.domain
-        });
-        launchVideo(opts);
-      } else if (opts.domain.indexOf('vimeo.com')  > -1) {
-        opts.getUrlFn = getVimeoUrl;
-        sendMetricsData({
-          object: 'overlay_icon',
-          method: 'launch',
-          domain: opts.domain
-        });
-        launchVideo(opts);
-      }
-    });
-
-    worker.port.on('metrics', function(opts) {
-      sendMetricsData(opts);
-    });
-  }
-});
-
-// add 'send-to-mini-player' option to context menu
-initContextMenuHandlers();
