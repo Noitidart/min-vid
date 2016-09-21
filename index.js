@@ -4,16 +4,12 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-const system = require('sdk/system');
 const pageMod = require('sdk/page-mod');
-const { getActiveView } = require('sdk/view/core');
 const getYouTubeUrl = require('./lib/get-youtube-url.js');
 const getVimeoUrl = require('./lib/get-vimeo-url.js');
 const launchVideo = require('./lib/launch-video');
 const sendMetricsData = require('./lib/send-metrics-data.js');
 const initContextMenuHandlers = require('./lib/context-menu-handlers.js');
-const makePanelDraggable = require('./lib/make-panel-draggable.js');
-const { setTimeout } = require('sdk/timers');
 const panelUtils = require('./lib/panel-utils.js');
 
 const dimensions = {
