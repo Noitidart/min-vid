@@ -22,8 +22,8 @@ const dimensions = {
 };
 
 const panel = require('sdk/panel').Panel({
-  contentURL: './default.html',
-  contentScriptFile: './controls.js',
+  contentURL: './default.html?cachebust=' + Date.now(),
+  contentScriptFile: './controls.js?cachebust=' + Date.now(),
   width: dimensions.width,
   height: dimensions.height,
   position: {
@@ -113,7 +113,7 @@ function getPageUrl(domain, id, time) {
 // handle browser resizing
 pageMod.PageMod({
   include: '*',
-  contentScriptFile: './resize-listener.js',
+  contentScriptFile: './resize-listener.js?cachebust=' + Date.now(),
   onAttach: function(worker) {
     worker.port.on('resized', function() {
       if (panel.isShowing) {
@@ -126,8 +126,8 @@ pageMod.PageMod({
 // add launch icon to video embeds
 pageMod.PageMod({
   include: '*',
-  contentStyleFile: './icon-overlay.css',
-  contentScriptFile: './icon-overlay.js',
+  contentStyleFile: './icon-overlay.css?cachebust=' + Date.now(),
+  contentScriptFile: './icon-overlay.js?cachebust=' + Date.now(),
   onAttach: function(worker) {
     worker.port.on('launch', function(opts) {
       if (opts.domain.indexOf('youtube.com') > -1) {
