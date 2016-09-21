@@ -91,7 +91,7 @@ panel.port.on('addon-message', opts => {
   } else if (title === 'maximize') {
     adjustHeight(dimensions.height);
   } else if (title === 'metrics-event') {
-    sendMetricsData(opts, panel);
+    sendMetricsData(opts);
   }
 });
 
@@ -136,16 +136,16 @@ pageMod.PageMod({
           object: 'overlay_icon',
           method: 'launch',
           domain: opts.domain
-        }, panel);
-        launchVideo(opts, panel);
+        });
+        launchVideo(opts);
       } else if (opts.domain.indexOf('vimeo.com')  > -1) {
         opts.getUrlFn = getVimeoUrl;
         sendMetricsData({
           object: 'overlay_icon',
           method: 'launch',
           domain: opts.domain
-        }, panel);
-        launchVideo(opts, panel);
+        });
+        launchVideo(opts);
       }
     });
 
