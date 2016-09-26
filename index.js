@@ -4,6 +4,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
+const { getActiveView } = require('sdk/view/core');
 const pageMod = require('sdk/page-mod');
 
 const getYouTubeUrl = require('./lib/get-youtube-url');
@@ -25,6 +26,9 @@ exports.main = function() {
 			left: 10
 		}
 	});
+
+  // Keep the panel open when it loses focus.
+  getActiveView(panel).setAttribute('noautohide', true);
 
   // handle browser resizing
   browserResizeMod = pageMod.PageMod({
