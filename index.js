@@ -11,19 +11,31 @@ const getVimeoUrl = require('./lib/get-vimeo-url');
 const launchVideo = require('./lib/launch-video');
 const sendMetricsData = require('./lib/send-metrics-data');
 const contextMenuHandlers = require('./lib/context-menu-handlers');
-const panelUtils = require('./lib/panel-utils');
 
-let browserResizeMod, launchIconsMod;
+let browserResizeMod, launchIconsMod, panel;
 
 exports.main = function() {
+	panel = require('sdk/panel').Panel({
+		contentURL: './default.html',
+		contentScriptFile: './controls.js',
+		width: 320,
+		height: 180,
+		position: {
+			bottom: 10,
+			left: 10
+		}
+	});
+
   // handle browser resizing
   browserResizeMod = pageMod.PageMod({
     include: '*',
     contentScriptFile: './resize-listener.js?cachebust=' + Date.now(),
     onAttach: function(worker) {
       worker.port.on('resized', function() {
-        const panel = panelUtils.getPanel();
-        if (panel && panel.isShowing) panelUtils.redraw();
+        if (panel && panel.isShowing) {
+					const xulPanel = getActiveView(panel);
+					xulPanel.moveToAnchor(xulPanel.ownerDocument.documentElement, 'bottomleft bottomleft', 10, -10);
+				}
       });
     }
   });
@@ -41,26 +53,26 @@ exports.main = function() {
             object: 'overlay_icon',
             method: 'launch',
             domain: opts.domain
-          });
-          launchVideo(opts);
+          }, panel);
+          launchVideo(opts, panel);
         } else if (opts.domain.indexOf('vimeo.com')  > -1) {
           opts.getUrlFn = getVimeoUrl;
           sendMetricsData({
             object: 'overlay_icon',
             method: 'launch',
             domain: opts.domain
-          });
-          launchVideo(opts);
+          }, panel);
+          launchVideo(opts, panel);
         }
       });
       worker.port.on('metrics', sendMetricsData);
     }
   });
 
-  contextMenuHandlers.init(panelUtils.getPanel());
+  contextMenuHandlers.init(panel);
 };
 exports.onUnload = function(reason) {
-  panelUtils.destroy();
+  panel.destroy();
   contextMenuHandlers.destroy();
   browserResizeMod.destroy();
   launchIconsMod.destroy();
