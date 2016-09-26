@@ -27,6 +27,47 @@ exports.main = function() {
 		}
 	});
 
+  panel.port.on('addon-message', opts => {
+    const title = opts.action;
+
+    if (title === 'send-to-tab') {
+      const pageUrl = getPageUrl(opts.domain, opts.id, opts.time);
+      if (pageUrl) require('sdk/tabs').open(pageUrl);
+      else {
+        console.error('could not parse page url for ', opts); // eslint-disable-line no-console
+        panel.port.emit('set-video', {error: 'Error loading video from ' + opts.domain});
+      }
+      panel.port.emit('set-video', {domain: '', src: ''});
+      panel.hide();
+    } else if (title === 'close') {
+      panel.port.emit('set-video', {domain: '', src: ''});
+      panel.hide();
+    } else if (title === 'minimize') {
+      console.error('TODO: make adjustHeight work')
+      //adjustHeight(dimensions.minimizedHeight);
+    } else if (title === 'maximize') {
+      console.error('TODO: make adjustHeight work')
+      //adjustHeight(dimensions.height);
+    } else if (title === 'metrics-event') {
+      sendMetricsData(opts, panel);
+    }
+  });
+
+  function getPageUrl(domain, id, time) {
+    let url;
+    if (domain.indexOf('youtube') > -1) {
+      url = `https://youtube.com/watch?v=${id}&t=${Math.floor(time)}`;
+    } else if (domain.indexOf('vimeo') > -1) {
+      const min = Math.floor(time / 60);
+      const sec = Math.floor(time - min * 60);
+      url = `https://vimeo.com/${id}#t=${min}m${sec}s`;
+    } else if (domain.indexOf('vine') > -1) {
+      url = `https://vine.co/v/${id}`;
+    }
+
+    return url;
+  }
+
   // Keep the panel open when it loses focus.
   getActiveView(panel).setAttribute('noautohide', true);
 
