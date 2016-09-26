@@ -43,11 +43,9 @@ exports.main = function() {
       panel.port.emit('set-video', {domain: '', src: ''});
       panel.hide();
     } else if (title === 'minimize') {
-      console.error('TODO: make adjustHeight work')
-      //adjustHeight(dimensions.minimizedHeight);
+      adjustHeight(panel, dimensions.minimizedHeight);
     } else if (title === 'maximize') {
-      console.error('TODO: make adjustHeight work')
-      //adjustHeight(dimensions.height);
+      adjustHeight(panel, dimensions.height);
     } else if (title === 'metrics-event') {
       sendMetricsData(opts, panel);
     }
@@ -66,6 +64,11 @@ exports.main = function() {
     }
 
     return url;
+  }
+
+  function adjustHeight(panel, newHeight) {
+    // TODO: see if this works without reseating the XUL element.
+    // maybe toggling show/hide will work?
   }
 
   // Keep the panel open when it loses focus.
