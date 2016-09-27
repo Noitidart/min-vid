@@ -32,6 +32,17 @@ exports.main = function() {
       left: 10
     }
   });
+  const xulPanel = getActiveView(panel);
+  // TODO: could xulPanel be null?
+
+  // Keep the panel open when it loses focus.
+  xulPanel.setAttribute('noautohide', true);
+
+  // Make the panel transparent.
+  xulPanel.setAttribute('style', '-moz-appearance: none; border: 0; margin: 0; background: rgba(0,0,0,0)');
+  const xulContainer = xulPanel.ownerDocument.getAnonymousElementByAttribute(xulPanel, 'class', 'panel-arrowcontent');
+  xulContainer.style.background = 'rgba(0,0,0,0)';
+  xulContainer.style.boxShadow = 'none';
 
   panel.port.on('addon-message', opts => {
     const title = opts.action;
@@ -81,9 +92,6 @@ exports.main = function() {
     frame.style.height = newHeight + 'px';
     xulPanel.moveToAnchor(xulPanel.ownerDocument.documentElement, 'bottomleft bottomleft', 10, -10);
   }
-
-  // Keep the panel open when it loses focus.
-  getActiveView(panel).setAttribute('noautohide', true);
 
   // handle browser resizing
   browserResizeMod = pageMod.PageMod({
