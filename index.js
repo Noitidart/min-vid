@@ -15,6 +15,12 @@ const contextMenuHandlers = require('./lib/context-menu-handlers');
 
 let browserResizeMod, launchIconsMod, panel;
 
+const dimensions = {
+  height: 180,
+  minimizedHeight: 40,
+  width: 320
+}
+
 exports.main = function() {
 	panel = require('sdk/panel').Panel({
 		contentURL: './default.html',
@@ -43,9 +49,9 @@ exports.main = function() {
       panel.port.emit('set-video', {domain: '', src: ''});
       panel.hide();
     } else if (title === 'minimize') {
-      adjustHeight(panel, dimensions.minimizedHeight);
+      adjustHeight(dimensions.minimizedHeight);
     } else if (title === 'maximize') {
-      adjustHeight(panel, dimensions.height);
+      adjustHeight(dimensions.height);
     } else if (title === 'metrics-event') {
       sendMetricsData(opts, panel);
     }
@@ -66,9 +72,16 @@ exports.main = function() {
     return url;
   }
 
-  function adjustHeight(panel, newHeight) {
+  // newHeight should be just a number, like 40.
+  function adjustHeight(newHeight) {
     // TODO: see if this works without reseating the XUL element.
     // maybe toggling show/hide will work?
+    const xulPanel = getActiveView(panel);
+    const frames = xulPanel.getElementsByTagName('iframe');
+    const frame = frames.length && frames[0];
+    if (!frame) return console.error('Unable to change panel height: iframe not found');
+    frame.style.height = newHeight + 'px';
+    xulPanel.moveToAnchor(xulPanel.ownerDocument.documentElement, 'bottomleft bottomleft', 10, -10);
   }
 
   // Keep the panel open when it loses focus.
