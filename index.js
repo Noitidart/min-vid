@@ -5,6 +5,8 @@
  */
 
 const pageMod = require('sdk/page-mod');
+const self = require("sdk/self");
+const { getMostRecentBrowserWindow } = require('sdk/window/utils');
 
 const getYouTubeUrl = require('./lib/get-youtube-url');
 const getVimeoUrl = require('./lib/get-vimeo-url');
@@ -16,6 +18,25 @@ const panelUtils = require('./lib/panel-utils');
 let browserResizeMod, launchIconsMod;
 
 exports.main = function() {
+  // create a window
+  const window = getMostRecentBrowserWindow();
+  const win = window.open(self.data.url('default.html'), '_blank',
+                          'chrome,dialog=no,width=320,height=180,titlebar=no');
+  function waitForWin(cb) {
+    if (win.wrappedJSObject.communicate) {
+      cb(win.wrappedJSObject.communicate);
+    } else {
+      window.setTimeout(() => { waitForWin(callback) });
+    }
+  }
+
+  waitForWin(communicate => {
+    communicate('this is some text from the opener');
+  });
+
+
+  // back to our regularly scheduled minvid...
+
   // handle browser resizing
   browserResizeMod = pageMod.PageMod({
     include: '*',
