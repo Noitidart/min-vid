@@ -194,6 +194,8 @@ video#video {
 
 .close {
     background: url('img/close.svg');
+    /* try using the close button to enable dragging, just for the moment */
+    -moz-window-dragging: drag;
 }
 
 .volume {

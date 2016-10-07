@@ -25,6 +25,8 @@ window.AppData = new Proxy(defaultData, {
   }
 });
 
+window.pendingCommand = '';
+
 function renderApp() {
   ReactDOM.render(React.createElement(AppView, window.AppData),
                   document.getElementById('container'));
