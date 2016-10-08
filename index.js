@@ -5,50 +5,17 @@
  */
 
 const pageMod = require('sdk/page-mod');
-const self = require("sdk/self");
-const { getMostRecentBrowserWindow } = require('sdk/window/utils');
 
 const getYouTubeUrl = require('./lib/get-youtube-url');
 const getVimeoUrl = require('./lib/get-vimeo-url');
 const launchVideo = require('./lib/launch-video');
 const sendMetricsData = require('./lib/send-metrics-data');
 const contextMenuHandlers = require('./lib/context-menu-handlers');
-const panelUtils = require('./lib/panel-utils');
+const windowUtils = require('./lib/window-utils');
 
-let browserResizeMod, launchIconsMod;
+let launchIconsMod;
 
 exports.main = function() {
-  // create a window
-  const window = getMostRecentBrowserWindow();
-  const win = window.open(self.data.url('default.html'), '_blank',
-                          'chrome,dialog=no,width=320,height=180,titlebar=no');
-  function waitForWin(cb) {
-    if (win.wrappedJSObject.communicate) {
-      cb(win.wrappedJSObject.communicate);
-    } else {
-      window.setTimeout(() => { waitForWin(callback) });
-    }
-  }
-
-  waitForWin(communicate => {
-    communicate('this is some text from the opener');
-  });
-
-
-  // back to our regularly scheduled minvid...
-
-  // handle browser resizing
-  browserResizeMod = pageMod.PageMod({
-    include: '*',
-    contentScriptFile: './resize-listener.js?cachebust=' + Date.now(),
-    onAttach: function(worker) {
-      worker.port.on('resized', function() {
-        const panel = panelUtils.getPanel();
-        if (panel && panel.isShowing) panelUtils.redraw();
-      });
-    }
-  });
-
   // add launch icon to video embeds
   launchIconsMod = pageMod.PageMod({
     include: '*',
@@ -78,11 +45,10 @@ exports.main = function() {
     }
   });
 
-  contextMenuHandlers.init(panelUtils.getPanel());
+  contextMenuHandlers.init(windowUtils.getWindow());
 };
 exports.onUnload = function(reason) {
-  panelUtils.destroy();
+  windowUtils.destroy();
   contextMenuHandlers.destroy();
-  browserResizeMod.destroy();
   launchIconsMod.destroy();
 };
