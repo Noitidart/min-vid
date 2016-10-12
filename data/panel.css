@@ -23,10 +23,6 @@ body,
     width: 100%;
 }
 
-.player-wrap {
-  -moz-window-dragging: drag;
-}
-
 html,
 body,
 #video {
@@ -194,6 +190,21 @@ video#video {
 
 .maximize {
     background: url('img/maximize.svg');
+}
+
+.drag {
+    background: url('img/move-icon.svg');
+    background-size: 15px 15px;
+    /* This odd property is how we enable dragging. */
+    -moz-window-dragging: drag;
+}
+
+.drag:hover {
+    cursor: grab;
+}
+
+.drag:active {
+    cursor: grabbing;
 }
 
 .close {
