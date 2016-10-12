@@ -7,13 +7,14 @@ const ErrorView = require('./error-view');
 
 module.exports = React.createClass({
   render: function() {
+    const noop = () => false;
     return (
         <div className='app'>
           {/* Show Error View, ELSE Show Loading View ELSE no view */}
           {this.props.error ? <ErrorView {...this.props}/> :
             (!this.props.loaded) ? <LoadingView {...this.props}/> : null}
 
-          <div className={cn('player-wrap', {hidden: !this.props.loaded})}>
+          <div className={cn('player-wrap', {hidden: !this.props.loaded})} onMouseUp={noop}>
             <PlayerView {...this.props} />
           </div>
         </div>
