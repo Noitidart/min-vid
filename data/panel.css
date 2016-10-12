@@ -23,6 +23,10 @@ body,
     width: 100%;
 }
 
+.player-wrap {
+  -moz-window-dragging: drag;
+}
+
 html,
 body,
 #video {
