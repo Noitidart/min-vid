@@ -1,5 +1,6 @@
 module.exports = sendToAddon;
 
 function sendToAddon(obj) {
-  window.dispatchEvent(new CustomEvent('addon-message', {detail: obj}));
+  // TODO: overwrites if multiple commands issued. should work fine.
+  window.pendingCommand = JSON.stringify(obj);
 }
