@@ -1,5 +1,6 @@
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('chrome://minvid-ostypes/content/cutils.jsm');
+Components.utils.import('resource://gre/modules/Console.jsm');
 var EXPORTED_SYMBOLS = ['ostypes'];
 
 // no need to define core or import cutils as all the globals of the worker who importScripts'ed it are availble here
