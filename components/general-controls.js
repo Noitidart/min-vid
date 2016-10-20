@@ -46,10 +46,8 @@ module.exports = React.createClass({
     resetPlayer();
   },
   render: function() {
-    const noop = () => false;
     return (
       <div className='right'>
-        <a className='drag' onClick={noop} onMouseDown={noop} onMouseUp={noop} />
         <a onClick={this.sendToTab} data-tip='Send to tab' className='tab' />
         <a className={cn('minimize', {hidden: this.props.minimized})}
           onClick={this.minimize} data-tip='Minimize' />

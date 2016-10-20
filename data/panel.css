@@ -192,25 +192,8 @@ video#video {
     background: url('img/maximize.svg');
 }
 
-.drag {
-    background: url('img/move-icon.svg');
-    background-size: 15px 15px;
-    /* This odd property is how we enable dragging. */
-    -moz-window-dragging: drag;
-}
-
-.drag:hover {
-    cursor: grab;
-}
-
-.drag:active {
-    cursor: grabbing;
-}
-
 .close {
     background: url('img/close.svg');
-    /* try using the close button to enable dragging, just for the moment */
-    -moz-window-dragging: drag;
 }
 
 .volume {
