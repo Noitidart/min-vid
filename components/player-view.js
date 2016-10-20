@@ -257,7 +257,9 @@ module.exports = React.createClass({
   render: function() {
     const noop = () => false;
     const videoEl = this.isYt ?
-          (<iframe id='video' ref='video' src={this.props.src} onContextMenu={noop} />) :
+          (<iframe id='video' ref='video' src={this.props.src} onContextMenu={noop}
+            /* mousethrough is a XUL thing needed for dragging to work */
+            mousethrough='always' />) :
           (<video id='video' ref='video' src={this.props.src} autoplay={false} onContextMenu={noop}/>);
 
     return (
