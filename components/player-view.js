@@ -284,7 +284,7 @@ module.exports = React.createClass({
                  className={cn('unmute', {hidden: !this.props.muted})} />
               <input type='range' className={cn('volume', {hidden: !this.state.showVolume})}
                      min='0' max='1' step='.01' value={this.props.muted ? 0 : this.props.volume}
-                     onMouseDown={this.preventDefault} onMouseMove={this.preventDefault}
+                     onMouseDownCapture={this.preventDefault} onMouseMoveCapture={this.preventDefault}
                      onChange={this.setVolume}/>
             </div>
 
