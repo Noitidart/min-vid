@@ -254,6 +254,12 @@ module.exports = React.createClass({
     if (this.props.playing) this.pause();
     else this.play();
   },
+  // Need to prevent default when sliding the slider, otherwise the window will
+  // be dragged instead.
+  preventDefault: function(ev) {
+    ev.preventDefault();
+    return false;
+  }
   render: function() {
     const noop = () => false;
     const videoEl = this.isYt ?
@@ -278,6 +284,7 @@ module.exports = React.createClass({
                  className={cn('unmute', {hidden: !this.props.muted})} />
               <input type='range' className={cn('volume', {hidden: !this.state.showVolume})}
                      min='0' max='1' step='.01' value={this.props.muted ? 0 : this.props.volume}
+                     onMouseDown={this.preventDefault} onMouseMove={this.preventDefault}
                      onChange={this.setVolume}/>
             </div>
 
