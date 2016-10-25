@@ -4417,6 +4417,7 @@ var x11Init = function() {
 		ifOpenedXCBConnClose: function() {
 			if (self._cache.XCBConn) {
 				self.API('xcb_disconnect')(self._cache.XCBConn);
+				delete self._cache.XCBConn;
 			}
 		},
 		cachedAtom: function(aAtomName, createAtomIfDne, refreshCache) {
