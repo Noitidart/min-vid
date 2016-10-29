@@ -4669,24 +4669,3 @@ function getGtkVersion() {
 
 // init
 var ostypes = new x11Init();
-
-			}
-		}
-
-		if (c_toolkit) {
-			getGtkVersion_cache = c_toolkit.toLowerCase() == 'gtk2' ? 2 : 3;
-		} else {
-			// DO NOT FALL BACK throw, this is critical to get right
-			throw new Error('could not determine gtk version!');
-			// // fallback to guess work based on FIREFOX_VERSION - which is very bad
-			// // guess fall back. this is horrible guess though, as on OpenSuse Firefox 47 is still Gtk2 (TWO) it is NOT gtk THREE
-			// return = FIREFOX_VERSION < 46 ? 2 : 3;
-		}
-	}
-
-	return getGtkVersion_cache;
-
-}
-
-// init
-var ostypes = new x11Init();
