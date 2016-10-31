@@ -269,14 +269,14 @@ module.exports = React.createClass({
               <ReactTooltip place='bottom' effect='solid' />
 
               <a onClick={this.play} data-tip='Play'
-                 className={cn('play', {hidden: this.props.playing})} />
+                 className={cn('play', 'nodrag', {hidden: this.props.playing})} />
               <a onClick={this.pause} data-tip='Pause'
-                 className={cn('pause', {hidden: !this.props.playing})} />
+                 className={cn('pause', 'nodrag', {hidden: !this.props.playing})} />
               <a onClick={this.mute} data-tip='Mute'
-                 className={cn('mute', {hidden: this.props.muted})} />
+                 className={cn('mute', 'nodrag', {hidden: this.props.muted})} />
               <a onClick={this.clickedUnmute} data-tip='Unmute'
-                 className={cn('unmute', {hidden: !this.props.muted})} />
-              <input type='range' className={cn('volume', {hidden: !this.state.showVolume})}
+                 className={cn('unmute', 'nodrag', {hidden: !this.props.muted})} />
+              <input type='range' className={cn('volume', 'nodrag', {hidden: !this.state.showVolume})}
                      min='0' max='1' step='.01' value={this.props.muted ? 0 : this.props.volume}
                      onChange={this.setVolume}/>
             </div>
@@ -286,15 +286,15 @@ module.exports = React.createClass({
 
           <div className={cn('exited', {hidden: !this.hasExited() || this.props.minimized})}>
             <div className='row'>
-              <button className='exit-replay' onClick={this.replay}></button>
-              <button className='exit-close' onClick={this.close}></button>
+              <button className={cn('exit-replay', 'nodrag')} onClick={this.replay}></button>
+              <button className={cn('exit-close', 'nodrag')} onClick={this.close}></button>
             </div>
           </div>
 
           <div className={cn('progress', {hidden: !this.state.hovered || this.props.minimized})}>
             <span className='domain'>{this.props.domain}</span>
             <div className='time'>{this.props.currentTime}</div>
-            <progress className='video-progress' onClick={this.setTime}
+            <progress className={cn('video-progress', 'nodrag')} onClick={this.setTime}
                       value={this.props.progress + ''}  />
           </div>
 
