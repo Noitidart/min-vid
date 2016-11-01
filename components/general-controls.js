@@ -47,13 +47,13 @@ module.exports = React.createClass({
   },
   render: function() {
     return (
-      <div className='right'>
-        <a onClick={this.sendToTab} data-tip='Send to tab' className={cn('tab', 'nodrag')} />
-        <a className={cn('minimize', 'nodrag', {hidden: this.props.minimized})}
+      <div className={cn('right', 'drag')} >
+        <a onClick={this.sendToTab} data-tip='Send to tab' className='tab' />
+        <a className={cn('minimize', {hidden: this.props.minimized})}
           onClick={this.minimize} data-tip='Minimize' />
         <a onClick={this.maximize} data-tip='Maximize'
-          className={cn('maximize', 'nodrag', {hidden: !this.props.minimized})} />
-        <a className={cn('close', 'nodrag')} onClick={this.close} data-tip='Close' />
+          className={cn('maximize', {hidden: !this.props.minimized})} />
+        <a className='close' onClick={this.close} data-tip='Close' />
       </div>
     );
   }

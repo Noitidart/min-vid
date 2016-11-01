@@ -42,7 +42,7 @@ module.exports = React.createClass({
               Something's gone wrong with this video, Try again later.
               <br/>
               <br/>
-              <span className={cn('error-link', 'nodrag')} onClick={this.sendToTab}>Open in new tab</span>
+              <span className='error-link' onClick={this.sendToTab}>Open in new tab</span>
             </p>
           </div>
         </div>
