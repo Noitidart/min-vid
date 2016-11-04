@@ -131,6 +131,7 @@ video#video {
 .controls {
     background: linear-gradient(rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, .33) 70%, transparent 100%);
     box-sizing: border-box;
+    cursor: grab;
     display: flex;
     height: 40px;
     justify-content: space-between;
@@ -151,6 +152,10 @@ video#video {
 
 .controls a:hover {
     opacity: 1;
+}
+
+.controls:active {
+    cursor: grabbing;
 }
 
 .controls.minimized {
